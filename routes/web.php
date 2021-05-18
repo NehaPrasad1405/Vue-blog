@@ -16,4 +16,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+//Category
+
 Route::get('categories', 'CategoryController@index')->name('categories.index');
+Route::get('/computed', 'CategoryController@computed')->name('categories.computed');
+
+//Tag
+
+Route::get('tags', 'TagController@index')->name('tags.index');

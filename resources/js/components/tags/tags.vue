@@ -1,9 +1,8 @@
 <template>
 <div class="container bg-lights">
 <div class="row justify-content-center">
-<form class="form-inline col-10" @submit.prevent="getCategories">
+<form class="form-inline col-10" @submit.prevent="getTags">
     <input class="form-control mr-sm-2" v-model="search.name" placeholder="Search by Name..">
-    <input class="form-control mr-sm-2" v-model="search.description" placeholder="Search by Description..">
     <button class="btn btn-outline-success my-2" type="submit">Search</button>&nbsp;&nbsp;
     <button class="btn btn-outline-danger my-2" @click="reset();">Reset</button>
 </form>
@@ -15,9 +14,9 @@
 {{danger}}
 </div>
 <div class="card">
-<div class="card-header bg-dark text-light">Category &nbsp;&nbsp;<small class="btn btn-info btn-sm" @click="CategoryForm = !CategoryForm;error='';category={'name':'','description':''}">+</small></div>
-<div v-if="CategoryForm">
-<category-create @refresh="onSuccess" :isEditable="isEditable" :editCategory="category"></category-create>
+<div class="card-header bg-dark text-light">Tags &nbsp;&nbsp;<small class="btn btn-info btn-sm" @click="TagForm = !TagForm;error='';tag={'name':''}">+</small></div>
+<div v-if="TagForm">
+<tag-create @refresh="onSuccess" :isEditable="isEditable" :edittag="tag"></tag-create>
 <br>
 </div>
 <table class="table table-hover">
@@ -25,18 +24,16 @@
     <tr class="bg-success">
       <th class="">ID</th>
       <th class="">Name</th>
-      <th class="">Description</th>
       <th class="">Action</th>
     </tr>
   </thead>
   <tbody>
-    <tr v-for="(category, index) in categories.data" :key=index>
-        <td>{{categories.from + index}}</td>
-        <td class="" @dblclick="searchOnClick('name',category.name)">{{category.name}}</td>
-        <td class="" @dblclick="searchOnClick('description',category.description)">{{category.description}}</td>
+    <tr v-for="(tag, index) in tags.data" :key=index>
+        <td>{{tags.from + index}}</td>
+        <td class="" @dblclick="searchOnClick('name',tag.name)">{{tag.name}}</td>
         <td class="">
-            <a href="#" class="btn btn-warning" @click="editCategory(category)">Edit</a>&nbsp;
-            <a href="#" class="btn btn-danger" @click="confirmDelete(category.id)">Delete</a>
+            <a href="#" class="btn btn-warning" @click="edittag(tag)">Edit</a>&nbsp;
+            <a href="#" class="btn btn-danger" @click="confirmDelete(tag.id)">Delete</a>
         </td>
     </tr>
   </tbody>
@@ -46,55 +43,52 @@
 </div>
 </div>
 <br>
-<pagination :paginationData="categories" @paginate="paginate"></pagination>
+<pagination :paginationData="tags" @paginate="paginate"></pagination>
 <confirmation v-if="showDeleteConfirmation" :show="true" @confirmDelete="deleteItem"></confirmation>
 </div>
 </template>
 
 <script>
-import categoryCreate from '../../components/categories/category-create'
+import tagCreate from '../../components/tags/tag-create'
 import pagination from '../../components/pagination'
     export default {
-        components : { categoryCreate , pagination },
+        components : { tagCreate , pagination },
         data() {
             return {
-                category:{
+                tag:{
                 name : '',
-                description: '',
                 },
                 isActive:false,
-                CategoryForm:false,
+                TagForm:false,
                 search:{
                     name : '',
-                    description: '',
                 },
-                categories:[],
+                tags:[],
                 success:'',
                 danger:'',
                 loader:'',
                 isEditable:false,
                 showDeleteConfirmation:false,
-                category_id:''
+                tag_id:''
             }
         },
         created(){
-        this.getCategories();
+        this.getTags();
     },
     methods:{
         paginate(current_page)
         {
-            this.categories.current_page=current_page;
-            this.getCategories();
+            this.tags.current_page=current_page;
+            this.getTags();
         },
         onSuccess(message){
             this.success=message;
-            this.getCategories;
+            this.getTags();
         },
         reset()
         {
             this.search.name="",
-            this.search.description="",
-            this.getCategories();
+            this.getTags();
         },
         searchOnClick(key,value)
         {
@@ -103,32 +97,27 @@ import pagination from '../../components/pagination'
             {
             _this.search.name=value;
             }
-            if(key==="description")
-            {
-            _this.search.description=value;
-            }
-            _this.getCategories();
+            _this.getTags();
         },
-        editCategory(category)
+        edittag(tag)
         {
-            this.CategoryForm=true,
+            this.TagForm=true,
             this.error=false,
             this.isEditable=true,
-            this.category=category
+            this.tag=tag
         },
         
-        getCategories(){
+        getTags(){
             let _this=this;
             _this.isActive=true;
             axios({
                 method: 'get',
-                url: '/api/categories/get?page=' + this.categories.current_page
-                    +'&name='+_this.search.name
-                    +'&description='+_this.search.description,
+                url: '/api/tags/get?page=' + this.tags.current_page
+                    +'&name='+_this.search.name,
             }).then(function (response) {
-                _this.categories=response.data.categories
+                _this.tags=response.data.tags
                 _this.isActive=false;
-                _this.CategoryForm=false;
+                _this.TagForm=false;
 
             }).catch(function (error) {
                 console.log(error);
@@ -136,19 +125,19 @@ import pagination from '../../components/pagination'
         },
         confirmDelete(key){
             let _this=this;
-            _this.category_id=key;
+            _this.tag_id=key;
             _this.showDeleteConfirmation=true;
         },
         deleteItem(){
             let _this=this;
             axios({
                 method: 'delete',
-                url: '/api/category/delete/'+_this.category_id,
+                url: '/api/tag/delete/'+_this.tag_id,
             }).then(function (response) {
                 _this.showDeleteConfirmation=false;
                 _this.danger=response.data.message;
                 _this.success='';
-                _this.getCategories();
+                _this.getTags();
             }).catch(function (error) {
                 console.log(error);
             });

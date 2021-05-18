@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Tag;
 use App\Traits\Search;
-use App\category;
 use Illuminate\Http\Request;
-
-class CategoryController extends Controller
+class TagController extends Controller
 {
     use Search;
     /**
@@ -14,21 +13,20 @@ class CategoryController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
-        return view('categories.index');
-    }
     public function get(Request $request)
     {
         $name=$request->name ?:'';
-        $description=$request->description ?:'';
-        $categories=Category::search('name',$name)
-                            ->search('description',$description)
-                            ->orderBy('id','desc')
-                            ->paginate(10);
+        $tags=Tag::search('name',$name)
+        ->orderBy('id','desc')
+        ->paginate(10);
         return response()->json([
-            'categories' => $categories
+            'tags' => $tags
         ], 200);
+    }
+    public function index()
+    {
+        $tags=Tag::all();
+        return view('tags.index')->withTags($tags);
     }
 
     /**
@@ -53,31 +51,28 @@ class CategoryController extends Controller
         {
             $request->validate(
                 [
-                    'name'=> 'required|unique:categories,name,'.$request->id,
-                    'description'=> 'required'
+                    'name'=> 'required|unique:tags,name,'.$request->id,
                 ]
                 );
-                $message="Category Updated";
+                $message="Tag Updated";
         }
         else
         {
             $request->validate(
                 [
-                    'name'=> 'required|unique:categories,name,',
-                    'description'=> 'required'
+                    'name'=> 'required|unique:tags,name,',
                 ]
                 );
-                $message="Category Added";
+                $message="Tag Added";
         }
-        $category=Category::UpdateOrCreate(
+        $tag=Tag::UpdateOrCreate(
             ['id'=>$request->id],
-            ['name'=> $request->name,
-             'description'=>$request->description
+            ['name'=> $request->name
             ]
         );
         
         return response()->json([
-            'category' => $category,
+            'tag' => $tag,
             'message'=>$message
         ], 200);
     }
@@ -85,10 +80,10 @@ class CategoryController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\category  $category
+     * @param  \App\Tag  $tag
      * @return \Illuminate\Http\Response
      */
-    public function show(category $category)
+    public function show(Tag $tag)
     {
         //
     }
@@ -96,10 +91,10 @@ class CategoryController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  \App\category  $category
+     * @param  \App\Tag  $tag
      * @return \Illuminate\Http\Response
      */
-    public function edit(category $category)
+    public function edit(Tag $tag)
     {
         //
     }
@@ -108,10 +103,10 @@ class CategoryController extends Controller
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \App\category  $category
+     * @param  \App\Tag  $tag
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, category $category)
+    public function update(Request $request, Tag $tag)
     {
         //
     }
@@ -119,25 +114,11 @@ class CategoryController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\category  $category
+     * @param  \App\Tag  $tag
      * @return \Illuminate\Http\Response
      */
-    public function delete($category)
-    {
-        $category_destroy=Category::find($category);
-        // dd($category_destroy);
-        $category_destroy->delete();
-        $message="Category Deleted";
-        return response()->json([
-            'message'=>$message
-        ], 200);
-    }
-    public function destroy(category $category)
+    public function destroy(Tag $tag)
     {
         //
-    }
-    public function computed()
-    {
-        return view('computed');
     }
 }
